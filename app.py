@@ -1,17 +1,20 @@
 # import the Flask class from the flask module
 from flask import Flask, render_template, redirect, url_for, request,\
-    session, flash, g
+    session, flash
+from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
-import sqlite3
-from waitress import serve
+import os
 
 # create the application object
 app = Flask(__name__)
 
-#should be random and in a separate config file
-app.secret_key = "my_precious"
-app.database = "sample.db"
+#configuration settings
+app.config.from_object(os.environ['APP_SETTINGS'])
 
+#create the sql alchemy objet
+db = SQLAlchemy(app)
+
+from models import *
 # login required decorator
 def login_required(f):
     @wraps(f)
@@ -28,15 +31,7 @@ def login_required(f):
 @login_required
 def home():
     #return "Hello, World!"  # return a string
-    posts = []
-    try: 
-
-        g.db = connect_db()
-        cur = g.db.execute('select * from posts')
-        posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
-        g.db.close()
-    except sqlite3.OperationalError:
-        flash("Database Error")
+    posts = db.session.query(BlogPost).all()
     return render_template('index.html', posts=posts)
     
 @app.route('/welcome')
@@ -62,9 +57,6 @@ def logout():
     flash('You were just logged out!')
     return redirect(url_for('welcome'))
 
-def connect_db(): 
-    return sqlite3.connect(app.database)
-
 # start the server with the 'run()' method
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

@@ -28,10 +28,15 @@ def login_required(f):
 @login_required
 def home():
     #return "Hello, World!"  # return a string
-    g.db = connect_db()
-    cur = g.db.execute('select * from posts')
-    posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
-    g.db.close()
+    posts = []
+    try: 
+
+        g.db = connect_db()
+        cur = g.db.execute('select * from posts')
+        posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
+        g.db.close()
+    except sqlite3.OperationalError:
+        flash("Database Error")
     return render_template('index.html', posts=posts)
     
 @app.route('/welcome')

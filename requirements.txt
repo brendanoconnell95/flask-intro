@@ -9,5 +9,5 @@ Jinja2==2.11.2
 MarkupSafe==1.1.1
 requests==2.23.0
 urllib3==1.26.5
-waitress==2.1.1
+waitress==2.1.2
 Werkzeug==2.2.3
